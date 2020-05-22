@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-with open("README.md") as readme_file:
+with open("README.md", encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
 test_requirements = [
@@ -16,7 +16,7 @@ docs_requirements = [
     
 ]
 
-setup_requirements = [
+setup_requirements = [numpy
     
 ]
 
