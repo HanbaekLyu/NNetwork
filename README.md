@@ -3,7 +3,9 @@
 [![PyPI Version](https://img.shields.io/pypi/v/NNetwork.svg)](https://pypi.org/project/NNetwork/)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/NNetwork.svg)](https://pypi.org/project/NNetwork/)
 
-Custom graph/network/multi-weighted network class based on storing list of neighbors for each nodes (as opposed to edge list) for scalable sampling and searching algorithms
+`NNetwork` is a Custom graph/network/multi-weighted network class optimized for scalable sampling and searching algorithms. NNetwork stores a dictinary that maps each node to a list of its neighbors to allow for O(1) access for finding neighbors. 
+
+The efficiency of neighbor access is import for sampling algorithm such as random walks and glauber chain walks on graphs. Many packages rely on calculations involving powers of adjacency matrices to calculate random walks of length k, but Monte Carlo sampling algorithms rely on measurements made at every iteration of sampling. 
 
 ---
 
@@ -20,13 +22,49 @@ This is the preferred method to install NNetwork, as it will always install the 
 If you don't have [pip](https://pip.pypa.io) installed, these [installation instructions](http://docs.python-guide.org/en/latest/starting/installation/) can guide
 you through the process.
 
-## Quick Start
-```python
->>> from NNetwork import Example
->>> a = Example()
->>> a.get_value()
-10
+## Usage
 
+**Undirected Graphs**
+Create a simple undirected graph from an edgelist:
+```python
+>>> from NNetwork import NNetwork
+>>> edgelist = [[1,2],[2,3],[3,4]]
+>>> Network = NNetwork()
+>>> Network.add_edges(edgelist)
+>>> Network.has_edge(2,3)
+True
+```
+Get the neighbors of a node:
+```python
+>>> Network.neighbors(3)
+[2,4]
+```
+
+Find the intersection of edges with another network:
+```python
+>>> edgelist2 = [[2,3],[3,4],[5,7]]
+>>> Network2 = NNetwork()
+>>> Network2.add_edges(edgelist2)
+>>> Network.intersection(Network2)
+[[2,3],[3,4]]
+```
+
+**Weighted Graphs**
+Create a weighted graph from an edgelist:
+```python
+>>> from NNetwork import Wtd_NNetwork
+>>> edgelist = [[1,2,0.5],[2,3,0.8]]]
+>>> Network = NNetwork()
+>>> Network.add_wtd_edges(edgelist)
+>>> Network.get_edge_weight([2,3])
+0.8
+```
+
+Convert weighted graph to an unweighed graph by thresholding
+```python
+>>> Network_simple = Network.threshold2simple(0.7)
+>>> Network_simple.edges()
+[[2,3]]
 ```
 
 ## Citing
