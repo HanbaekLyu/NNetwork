@@ -7,6 +7,8 @@
 
 The efficiency of neighbor access is import for sampling algorithm such as random walks and glauber chain walks on graphs. Many packages rely on calculations involving powers of adjacency matrices to calculate random walks of length k, but Monte Carlo sampling algorithms rely on measurements made at every iteration of sampling. 
 
+By Josh Vendrow and Hanbaek Lyu
+
 ---
 
 ## Installation
