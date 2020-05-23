@@ -25,6 +25,7 @@ you through the process.
 ## Usage
 
 **Undirected Graphs**
+
 Create a simple undirected graph from an edgelist:
 ```python
 >>> from NNetwork import NNetwork
@@ -50,6 +51,7 @@ Find the intersection of edges with another network:
 ```
 
 **Weighted Graphs**
+
 Create a weighted graph from an edgelist:
 ```python
 >>> from NNetwork import Wtd_NNetwork
