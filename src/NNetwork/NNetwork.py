@@ -59,6 +59,23 @@ class NNetwork():
         else:
             self.neighb[v].add(u)
 
+            
+    def delete_edge(self, edge,):
+        """Delete edge from edgelist"""
+
+        u, v = edge
+
+        if u in self.neighb and v in self.neighb[u]:
+            self.neighb[u].remove(v)
+
+        if v in self.neighb and u in self.neighb[v]:
+            self.neighb[v].remove(u)
+
+        for i in range(len(self.edges)):
+            if self.edges[i] == edge:
+                self.edges.pop(i)
+                
+                
     def add_nodes(self, nodes):
         """Given a list of nodes, adds the nodes to the Network"""
 
