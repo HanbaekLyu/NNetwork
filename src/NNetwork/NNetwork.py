@@ -60,7 +60,7 @@ class NNetwork():
             self.neighb[v].add(u)
 
             
-    def delete_edge(self, edge,):
+    def delete_edge(self, edge):
         """Delete edge from edgelist"""
 
         u, v = edge
