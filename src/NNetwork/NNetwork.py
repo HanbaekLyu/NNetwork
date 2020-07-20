@@ -17,7 +17,7 @@ class NNetwork():
         self.vertices_set = set()
         self.number_nodes = 0
 
-    """ 
+    """
     def set_edges(self, edges):
 
         self.sort_left(edges)
@@ -59,23 +59,6 @@ class NNetwork():
         else:
             self.neighb[v].add(u)
 
-            
-    def delete_edge(self, edge):
-        """Delete edge from edgelist"""
-
-        u, v = edge
-
-        if u in self.neighb and v in self.neighb[u]:
-            self.neighb[u].remove(v)
-
-        if v in self.neighb and u in self.neighb[v]:
-            self.neighb[v].remove(u)
-
-        for i in range(len(self.edges)):
-            if self.edges[i] == edge:
-                self.edges.pop(i)
-                
-                
     def add_nodes(self, nodes):
         """Given a list of nodes, adds the nodes to the Network"""
 
@@ -170,7 +153,7 @@ class Wtd_NNetwork():
             self.add_edge(edge, weight=edge_weight, increment_weights=increment_weights)
             # self.edge_weights.update({str(edge): default_edge_weight})
 
-    def add_edge(self, edge, weight=1, increment_weights=False):
+    def add_edge(self, edge, weight=float(1), increment_weights=False):
         """Given an edge, add this edge to the Network"""
         u, v = edge
         # self.edges.append(edge)
@@ -215,14 +198,40 @@ class Wtd_NNetwork():
         for edge in self.edges:
             self.add_edge(edge)
 
+    def uniq(self, lst):
+        ### get rid of duplicates in an input list "lst"
+        last = object()
+        for item in lst:
+            if item == last:
+                continue
+            yield item
+            last = item
+        ### Returns a generator object: take "list" to turn the output into a list
+
     def intersection(self, Network_other):
         """
         Given another network, returns all edges found in both networks.
         """
-        edges_other = set(Network_other.edges())
-        edges = set(self.get_edges())
-        intersection = edges.intersection(edges_other)
-        return list(intersection)
+        common_nodeset = self.vertices_set.intersection(Network_other.vertices_set)
+        common_edgelist = []
+
+        for x in common_nodeset:
+            for y in self.neighb[x].intersection(Network_other.neighbors(x)):
+                common_edgelist.append([x, y])
+
+        return common_edgelist
+
+    def intersection_slow(self, Network_other):
+        """
+        Given another network, returns all edges found in both networks.
+        """
+        edges_other = list(self.uniq(Network_other.get_edges()))
+        print('edges_other', edges_other)
+        edges = list(self.uniq(self.get_edges()))
+        print('edges', edges)
+        intersection = [e for e in edges if e in edges_other]
+        print('intersection', intersection)
+        return intersection
 
     def neighbors(self, node):
         """
@@ -290,11 +299,18 @@ class Wtd_NNetwork():
     def add_wtd_edges(self, edges, increment_weights=False):
         """Given an edgelist, add each edge in the edgelist to the network"""
         for wtd_edge in edges:
-            self.add_edge(wtd_edge[0:2], weight=wtd_edge[-1], increment_weights=increment_weights)
+            if len(wtd_edge) == 2:
+                self.add_edge(wtd_edge[0:2], weight=1, increment_weights=increment_weights)
+            else:
+                self.add_edge(wtd_edge[0:2], weight=float(wtd_edge[-1]), increment_weights=increment_weights)
 
-    def load_add_wtd_edges(self, path, increment_weights=False):
-        with open(path, "r") as file:
-            wtd_edgelist = eval(file.readline())
+    def load_add_wtd_edges(self, path, delimiter=',', increment_weights=False, use_genfromtxt=False):
+        if not use_genfromtxt:
+            with open(path, "r") as file:
+                wtd_edgelist = eval(file.readline())
+        else:
+            wtd_edgelist = np.genfromtxt(path, delimiter=delimiter, dtype=str)
+            wtd_edgelist = wtd_edgelist.tolist()
         self.add_wtd_edges(edges=wtd_edgelist, increment_weights=increment_weights)
 
     def clear_edges(self):
