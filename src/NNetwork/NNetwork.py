@@ -358,3 +358,9 @@ class Wtd_NNetwork():
     def get_colored_edge_weight(self, u, v):
         return self.colored_edge_weights.get(str([str(u), str(v)]))
 
+    def get_adjacency_matrix(self):
+        mx = np.zeros(shape=(len(self.vertices),len(self.vertices)))
+        for i in np.arange(len(self.vertices)):
+            for j in np.arange(len(self.vertices)):
+                mx[i, j] = self.get_edge_weight(self.vertices[i], self.vertices[j])
+        return mx
