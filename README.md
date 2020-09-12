@@ -1,3 +1,7 @@
+<p align="center">
+<img width="600" src="https://github.com/HanbaekLyu/NNetwork/blob/master/nnetwork_logo.pdf" alt="logo">
+</p>
+
 # NNetwork
 
 [![PyPI Version](https://img.shields.io/pypi/v/NNetwork.svg)](https://pypi.org/project/NNetwork/)
