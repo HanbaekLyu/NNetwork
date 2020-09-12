@@ -1,5 +1,5 @@
 <p align="center">
-<img width="600" src="https://github.com/HanbaekLyu/NNetwork/blob/master/nnetwork_logo.png?raw=true" alt="logo">
+<embed width="600" src="https://github.com/HanbaekLyu/NNetwork/blob/master/nnetwork_logo.pdf?raw=true" alt="logo">
 </p>
 
 # NNetwork
