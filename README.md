@@ -1,9 +1,13 @@
+<p align="center">
+<img width="700" src="https://github.com/HanbaekLyu/NNetwork/blob/master/nnetwork_logo.png?raw=true" alt="logo">
+</p>
+
 # NNetwork
 
 [![PyPI Version](https://img.shields.io/pypi/v/NNetwork.svg)](https://pypi.org/project/NNetwork/)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/NNetwork.svg)](https://pypi.org/project/NNetwork/)
 
-`NNetwork` is a Custom graph/network/multi-weighted network class optimized for scalable sampling and searching algorithms. NNetwork stores a dictinary that maps each node to a list of its neighbors to allow for O(1) access for finding neighbors. 
+`NNetwork` is a Custom graph/network/multi-weighted network class optimized for scalable sampling and searching algorithms. NNetwork stores a dictionary that maps each node to a list of its neighbors to allow for O(1) access for finding neighbors. 
 
 The efficiency of neighbor access is import for sampling algorithm such as random walks and glauber chain walks on graphs. Many packages rely on calculations involving powers of adjacency matrices to calculate random walks of length k, but Monte Carlo sampling algorithms rely on measurements made at every iteration of sampling. 
 
