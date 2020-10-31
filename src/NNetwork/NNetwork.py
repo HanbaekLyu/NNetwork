@@ -1,10 +1,14 @@
 import numpy as np
+import csv
+import ast
+import pickle
 
 """
 Neighborhood Network package
 Simple and weighted network objects with built-in neighborhood list for scalable random walk and MCMC sampling
 Author: Josh Vendrow and Hanbaek Lyu
 """
+
 
 class NNetwork():
 
@@ -30,15 +34,15 @@ class NNetwork():
         """Given an edgelist, add each edge in the edgelist to the network"""
         i = 0
         for edge in edges:
-            self.add_edge(edge, update=False)
+            self.add_edge(edge)
             # print('Loading %i th edge out of %i edges' % (i, len(edges)))
             # i += 1
 
         # self.node = list(self.neighb.keys())
 
-    def add_edge(self, edge, update=True):
+    def add_edge(self, edge):
         """Given an edge, add this edge to the Network"""
-
+        # edge = [u, v]
         u, v = edge
         self.edges.append(edge)
         if u not in self.neighb:
@@ -80,6 +84,7 @@ class NNetwork():
             self.add_edge(edge)
 
     def get_edges(self):
+        # this may create unecessary large lists
         set_edgelist = []
         for x in self.vertices:
             if x in self.neighb:
@@ -107,6 +112,8 @@ class NNetwork():
         """
         Given a node, returns all the neighbors of the node.
         """
+        if node not in self.nodes():
+            print('ERROR: %s not in the node set' % node)
         return self.neighb[node]
 
     def has_edge(self, u, v):
@@ -127,6 +134,49 @@ class NNetwork():
     def edges(self):
         return self.edges
 
+    def get_adjacency_matrix(self):
+        mx = np.zeros(shape=(len(self.vertices), len(self.vertices)))
+        for i in np.arange(len(self.vertices)):
+            for j in np.arange(len(self.vertices)):
+                if self.has_edge(self.vertices[i], self.vertices[j]) > 0:
+                    mx[i, j] = 1
+        return mx
+
+    def subgraph(self, nodelist):
+        # Take induced subgraph on the specified nodeset
+        V0 = set(nodelist).intersection(self.vertices)
+        G_sub = Wtd_NNetwork()
+        for u in V0:
+            nbh_sub = self.neighbors(u).intersection(set(nodelist))
+            if len(nbh_sub) > 0:
+                for v in nbh_sub:
+                    G_sub.add_edge([u, v])
+
+        return G_sub
+
+    def k_node_ind_subgraph(self, k, center=None):
+        # Computes a random k-node induced subgraph
+        # Initialized simple symmetric RW uniformly at "center" node,
+        # and collects neighboring node until we get k distinct nodes
+        # if center is None, then initial node is chosen uniformly at random
+        # Once a set of k distinct nodes are collected, take the induced subgraph on it
+        if k > len(self.vertices):
+            print("cannot take i% distinct nodes from a graph with %i nodes" % (k, len(self.vertices)))
+
+        V0 = []
+        x = np.random.choice(self.vertices)
+        if center is not None:
+            x = center
+        V0.append(x)
+
+        while len(V0) < k:
+            x = np.random.choice(list(self.neighbors(x)))
+            V0.append(x)
+            V0 = list(set(V0))
+
+        # now take subgraph on V0:
+        return self.subgraph(V0)
+
 
 class Wtd_NNetwork():
     '''
@@ -138,8 +188,8 @@ class Wtd_NNetwork():
     '''
 
     def __init__(self):
-        self.edges = []
-        self.edge_weights = {}
+        # self.edges = []
+        self.wtd_edges = {}
         self.neighb = {}
         self.vertices = []
         self.vertices_set = set()
@@ -153,17 +203,21 @@ class Wtd_NNetwork():
             self.add_edge(edge, weight=edge_weight, increment_weights=increment_weights)
             # self.edge_weights.update({str(edge): default_edge_weight})
 
-    def add_edge(self, edge, weight=float(1), increment_weights=False):
+    def add_edge(self, edge, weight=float(1), increment_weights=False, is_dict=False):
         """Given an edge, add this edge to the Network"""
-        u, v = edge
+        # if is_dict, then edge is the form of "['123', '456']".
+        if not is_dict:
+            u, v = edge
+        else:
+            u, v = eval(edge)
         # self.edges.append(edge)
-        if not increment_weights or not self.has_edge(u,v):
+        if not increment_weights or not self.has_edge(u, v):
             wt = weight
         else:
             wt = self.get_edge_weight(u, v) + weight
 
-        self.edge_weights.update({str([str(u), str(v)]): wt})
-        self.edge_weights.update({str([str(v), str(u)]): wt})
+        self.wtd_edges.update({str([str(u), str(v)]): wt})
+        self.wtd_edges.update({str([str(v), str(u)]): wt})
 
         if u not in self.neighb:
             self.neighb[u] = {v}
@@ -237,6 +291,9 @@ class Wtd_NNetwork():
         """
         Given a node, returns all the neighbors of the node.
         """
+        if node not in self.nodes():
+            print('ERROR: node %s not in the node set' % str(node))
+
         return self.neighb[node]
 
     def has_edge(self, u, v):
@@ -248,6 +305,13 @@ class Wtd_NNetwork():
         except KeyError:
             return False
 
+    def has_colored_edge(self, u, v):
+        """
+        Given two nodes, returns true of these is a colored edge between then, false otherwise.
+        """
+        colored_edge = self.get_colored_edge_weight(u, v)
+        return colored_edge != None
+
     def nodes(self, is_set=False):
         return self.vertices if not is_set else self.vertices_set
 
@@ -255,7 +319,7 @@ class Wtd_NNetwork():
         return self.number_nodes
 
     def get_edge_weight(self, u, v):
-        return self.edge_weights.get(str([str(u), str(v)]))
+        return self.wtd_edges.get(str([str(u), str(v)]))
 
     def get_edges(self):
         set_edgelist = []
@@ -284,7 +348,7 @@ class Wtd_NNetwork():
 
         return wtd_edgelist
 
-    def save_wtd_edgelist(self, default_folder = 'Temp_save_graphs', default_name='temp_wtd_edgelist'):
+    def save_wtd_edgelist(self, default_folder='Temp_save_graphs', default_name='temp_wtd_edgelist'):
         edgelist = self.get_edges()
         wtd_edgelist = []
         for edge in edgelist:
@@ -296,22 +360,54 @@ class Wtd_NNetwork():
             file.write(str(wtd_edgelist))
         return wtd_edgelist
 
-    def add_wtd_edges(self, edges, increment_weights=False):
-        """Given an edgelist, add each edge in the edgelist to the network"""
-        for wtd_edge in edges:
-            if len(wtd_edge) == 2:
-                self.add_edge(wtd_edge[0:2], weight=1, increment_weights=increment_weights)
-            else:
-                self.add_edge(wtd_edge[0:2], weight=float(wtd_edge[-1]), increment_weights=increment_weights)
+    def save_wtd_edges(self, path):
+        # Does not creat additional list file and saves directly self.wtd_edges as a np dictionary.
+        with open(path, 'wb') as handle:
+            pickle.dump(self.wtd_edges, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def load_add_wtd_edges(self, path, delimiter=',', increment_weights=False, use_genfromtxt=False):
-        if not use_genfromtxt:
-            with open(path, "r") as file:
-                wtd_edgelist = eval(file.readline())
+    def add_wtd_edges(self, edges, increment_weights=False, is_dict=False):
+        """Given an edgelist, add each edge in the edgelist to the network"""
+        """if is dict, edges is a dictionary {edge: weight}"""
+        if not is_dict:
+            for wtd_edge in edges:
+                if len(wtd_edge) == 2:
+                    self.add_edge(wtd_edge[0:2], weight=1, increment_weights=increment_weights)
+                else:
+                    self.add_edge(wtd_edge[0:2], weight=float(wtd_edge[-1]), increment_weights=increment_weights)
+            # self.get_edges()
         else:
-            wtd_edgelist = np.genfromtxt(path, delimiter=delimiter, dtype=str)
-            wtd_edgelist = wtd_edgelist.tolist()
-        self.add_wtd_edges(edges=wtd_edgelist, increment_weights=increment_weights)
+            for edge in edges.keys():
+                self.add_edge(edge, weight=edges.get(edge), increment_weights=increment_weights, is_dict=True)
+
+    def load_add_wtd_edges(self, path, delimiter=',', increment_weights=False, use_genfromtxt=False, is_dict=False,
+                           is_pickle=False):
+
+        if is_dict and not is_pickle:
+            wtd_edges = np.load(path, allow_pickle=True).items()
+        if is_pickle:
+            with open(path, 'rb') as handle:
+                wtd_edges = pickle.load(handle)
+
+        elif not use_genfromtxt:
+            with open(path, "r") as file:
+                wtd_edges = eval(file.readline())
+        elif delimiter == '\t':
+            with open(path) as f:
+                reader = csv.reader(f, delimiter="\t")
+                wtd_edges = list(reader)
+
+        else:
+            wtd_edges = np.genfromtxt(path, delimiter=delimiter, dtype=str)
+            wtd_edges = wtd_edges.tolist()
+
+        self.add_wtd_edges(edges=wtd_edges, increment_weights=increment_weights, is_dict=is_dict)
+
+    def get_min_max_edge_weights(self):
+        list_wts = []
+        for edge in self.get_wtd_edgelist():
+            list_wts.append(edge[-1])
+        print('minimum edge weight:', min(list_wts))
+        print('maximum edge weight:', max(list_wts))
 
     def clear_edges(self):
         node_set = self.vertices
@@ -349,7 +445,7 @@ class Wtd_NNetwork():
         for edge in edgelist:
             u, v = edge
             w = self.get_edge_weight(u, v)
-            colored_edge = [u, v, w*(w>=0), -w*(w<0)]
+            colored_edge = [u, v, w * (w >= 0), -w * (w < 0)]
             self.add_colored_edge(colored_edge)
 
         u, v = self.get_edges()[0]
@@ -359,8 +455,76 @@ class Wtd_NNetwork():
         return self.colored_edge_weights.get(str([str(u), str(v)]))
 
     def get_adjacency_matrix(self):
-        mx = np.zeros(shape=(len(self.vertices),len(self.vertices)))
+        mx = np.zeros(shape=(len(self.vertices), len(self.vertices)))
         for i in np.arange(len(self.vertices)):
             for j in np.arange(len(self.vertices)):
-                mx[i, j] = self.get_edge_weight(self.vertices[i], self.vertices[j])
+                if get_edge_weight(self.vertices[i], self.vertices[j]) > 0:
+                    mx[i, j] = self.get_edge_weight(self.vertices[i], self.vertices[j])
         return mx
+
+    def subgraph(self, nodelist):
+        # Take induced subgraph on the specified nodeset
+        V0 = set(nodelist).intersection(self.vertices)
+        G_sub = Wtd_NNetwork()
+        for u in V0:
+            nbh_sub = self.neighbors(u).intersection(set(nodelist))
+            if len(nbh_sub) > 0:
+                for v in nbh_sub:
+                    G_sub.add_edge([u, v], weight=self.get_edge_weight(u, v))
+
+        return G_sub
+
+    def k_node_ind_subgraph(self, k, center=None):
+        # Computes a random k-node induced subgraph
+        # Initialized simple symmetric RW uniformly at "center" node,
+        # and collects neighboring node until we get k distinct nodes
+        # if center is None, then initial node is chosen uniformly at random
+        # Once a set of k distinct nodes are collected, take the induced subgraph on it
+        if k > len(self.vertices):
+            print("cannot take %i distinct nodes from a graph with %i nodes" % (k, len(self.vertices)))
+
+        V0 = []
+        x = np.random.choice(self.vertices)
+        if center is not None:
+            x = center
+        V0.append(x)
+
+        while len(V0)<k:
+            x = np.random.choice(list(self.neighbors(x)))
+            V0.append(x)
+            V0 = list(set(V0))
+        print('taking induced subgraph on nodes: ', list(V0))
+
+        # now take subgraph on V0:
+        return self.subgraph(V0)
+
+    def r_neighborhood(self, nodelist, radius=1):
+        ### Take the induced subgraph of the r-neighborhood of a given subset of nodes
+        V = set(nodelist).intersection(self.vertices)
+        for r in np.arange(radius):
+            for u in V:
+                V = V.union(self.neighbors(u))
+
+        return self.subgraph(V)
+
+    def count_k_step_walks(self, u, radius=1):
+        ### Counts the number of k-step walks starting from u
+        ### Take the r-neighborhood, take the induced adjacency matrix Ar, and take r th power, and then sum
+        G_r_nbh = self.r_neighborhood([u], radius=radius)
+        vertices = G_r_nbh.vertices
+        idx = vertices.index(u)
+
+        Ar = np.zeros(shape=(len(G_r_nbh.vertices), len(G_r_nbh.vertices)))
+        for i in np.arange(len(self.vertices)):
+            for j in np.arange(len(self.vertices)):
+                if G_r_nbh.has_edge(self.vertices[i], self.vertices[j]):
+                    Ar[i, j] = G_r_nbh.get_edge_weight(self.vertices[i], self.vertices[j])
+
+        B = np.linalg.matrix_power(Ar, radius - 1)
+        print('!!!! B', B)
+
+        return sum(B[idx, :])
+
+
+
+
