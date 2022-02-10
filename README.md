@@ -94,7 +94,7 @@ Convert weighted graph to an unweighed graph by thresholding
 >>> print(G.edges)
 {"['1', '2']": 1, "['2', '1']": 1, "['2', '3']": 1, "['3', '2']": 1, "['1', '3']": 1, "['3', '1']": 1, "['1', '4']": 1, "['4', '1']": 1, "['1', '5']": 1, "['5', '1']": 1}
 >>> X, embs = G.get_patches(k=3, sample_size=4, skip_folded_hom=False)
->>> print(X)
+>>> print(X) # each column is a vectorizaiton of k x k induced adjacency matrix
 array([[0., 0., 0., 0.],
        [1., 1., 1., 1.],
        [0., 1., 0., 0.],
@@ -104,7 +104,7 @@ array([[0., 0., 0., 0.],
        [0., 1., 0., 0.],
        [1., 1., 1., 1.],
        [0., 0., 0., 0.]])
->>> print(embs)
+>>> print(embs) # four consecutive 3-walks in G
 [array(['2', '3', '2'], dtype='<U32'),
  array(['1', '2', '3'], dtype='<U32'),
  array(['4', '1', '4'], dtype='<U32'),
