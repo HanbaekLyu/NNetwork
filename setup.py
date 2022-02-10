@@ -16,7 +16,7 @@ docs_requirements = [
 
 ]
 
-setup_requirements = [numpy
+setup_requirements = ["numpy"
 
 ]
 

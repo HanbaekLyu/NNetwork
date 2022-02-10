@@ -146,14 +146,17 @@ class NNetwork():
     def indices(self, a, func):
         return [i for (i, val) in enumerate(a) if func(val)]
 
-    def read_adj(self, adj):
+    def read_adj(self, adj, nodelist=None):
         """
         adj = n x n (weighted) adjacency matrix
         """
-        for i in np.arange(adj.shape[0]):
+        if nodelist is None:
+            nodelist = np.arange(adj.shape[0])
+
+        for i in np.arange(len(nodelist)):
             nb_list = self.indices(adj[:, i], lambda x: x == 1)
             for j in nb_list:
-                self.add_edge(edge=[i,j], weight=float(adj[i,j]), increment_weights=False, is_dict=False)
+                self.add_edge(edge=[nodelist[i],nodelist[j]], weight=float(adj[i,j]), increment_weights=False, is_dict=False)
 
     def has_colored_edge(self, u, v):
         """
@@ -177,8 +180,8 @@ class NNetwork():
             if x in self.neighb:  ### x has a neighbor
                 for y in self.neighb[x]:
                     set_edgelist.append([x, y])
-        self.edges = set_edgelist
-        return self.edges
+        self.edgelist = set_edgelist
+        return self.edgelist
 
     def get_wtd_edgelist(self):
         edgelist = self.get_edges()
