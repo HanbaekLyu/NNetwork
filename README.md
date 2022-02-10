@@ -21,6 +21,7 @@ Built-in functions contain sampling algorithms for mesoscale network patches usi
 ### References:
 [1] Hanbaek Lyu, Facundo Memoli, and David Sivakoff,
 “Sampling random graph homomorphisms and applications to network data analysis.” (2019) https://arxiv.org/abs/1910.09483
+
 [2] Hanbaek Lyu, Yacoub Kureh, Joshua Vendrow*, and Mason A. Porter,
 “Learning low-rank mesoscale structures of networks” https://arxiv.org/abs/2102.06984 (2021)
 
