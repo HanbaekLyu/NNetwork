@@ -9,7 +9,7 @@ Instead of storing list of edges, store list of neighbors of each node
 This makes local MC updates and neighborhood query times O(1) time
 Simple and weighted network objects with built-in neighborhood list for scalable random walk and MCMC sampling
 Contains sampling algorithms for mesoscale network patch
-Default class is network with weighted edges, which can also have list-valued weights as its 'color'
+Default class is network with weighted edges, which can also have list-valued weights as its 'color'.
 Author: Hanbaek Lyu and Josh Vendrow
 """
 
@@ -24,7 +24,7 @@ class NNetwork():
 
     def __init__(self):
         # self.edges = []
-        self.wtd_edges = {}
+        self.edges = {}
         self.neighb = {}
         self.vertices = []
         self.vertices_set = set()
@@ -54,8 +54,8 @@ class NNetwork():
         else:
             wt = self.get_edge_weight(u, v) + weight
 
-        self.wtd_edges.update({str([str(u), str(v)]): wt})
-        self.wtd_edges.update({str([str(v), str(u)]): wt})
+        self.edges.update({str([str(u), str(v)]): wt})
+        self.edges.update({str([str(v), str(u)]): wt})
 
         if u not in self.neighb:
             self.neighb[u] = {v}
@@ -169,7 +169,7 @@ class NNetwork():
         return self.number_nodes
 
     def get_edge_weight(self, u, v):
-        return self.wtd_edges.get(str([str(u), str(v)]))
+        return self.edges.get(str([str(u), str(v)]))
 
     def get_edges(self):
         set_edgelist = []
@@ -210,17 +210,17 @@ class NNetwork():
             file.write(str(wtd_edgelist))
         return wtd_edgelist
 
-    def save_wtd_edges(self, path):
-        # Does not creat additional list file and saves directly self.wtd_edges as a np dictionary.
+    def save_edges(self, path):
+        # Does not creat additional list file and saves directly self.edges as a np dictionary.
         with open(path, 'wb') as handle:
-            pickle.dump(self.wtd_edges, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(self.edges, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     def save_colored_edges(self, path):
-        # Does not creat additional list file and saves directly self.wtd_edges as a np dictionary.
+        # Does not creat additional list file and saves directly self.edges as a np dictionary.
         with open(path, 'wb') as handle:
             pickle.dump(self.colored_edges, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def add_wtd_edges(self, edges, increment_weights=False):
+    def add_edges(self, edges, increment_weights=False):
         """Given an edgelist (or dictionary), add each edge in the edgelist to the network"""
         """if is dict, edges is a dictionary {edge: weight}"""
         if isinstance(edges, list):
@@ -235,28 +235,28 @@ class NNetwork():
                     edge = eval(edge)
                 self.add_edge(edge, weight=edges.get(str(edge)), increment_weights=increment_weights)
 
-    def load_add_wtd_edges(self, path, delimiter=',', increment_weights=False, use_genfromtxt=False,
+    def load_add_edges(self, path, delimiter=',', increment_weights=False, use_genfromtxt=False,
                            is_pickle=False):
 
         #if is_dict and not is_pickle:
-        #    wtd_edges = np.load(path, allow_pickle=True).items()
+        #    edges = np.load(path, allow_pickle=True).items()
         if is_pickle:
             with open(path, 'rb') as handle:
-                wtd_edges = pickle.load(handle)
+                edges = pickle.load(handle)
 
         elif not use_genfromtxt:
             with open(path, "r") as file:
-                wtd_edges = eval(file.readline())
+                edges = eval(file.readline())
         elif delimiter == '\t':
             with open(path) as f:
                 reader = csv.reader(f, delimiter="\t")
-                wtd_edges = list(reader)
+                edges = list(reader)
 
         else:
-            wtd_edges = np.genfromtxt(path, delimiter=delimiter, dtype=str)
-            wtd_edges = wtd_edges.tolist()
+            edges = np.genfromtxt(path, delimiter=delimiter, dtype=str)
+            edges = edges.tolist()
 
-        self.add_wtd_edges(edges=wtd_edges, increment_weights=increment_weights)
+        self.add_edges(edges=edges, increment_weights=increment_weights)
 
     def get_min_max_edge_weights(self):
         list_wts = []
@@ -438,12 +438,12 @@ class NNetwork():
         return self.subgraph(V0)
 
     def colorededges2wtdedges(self, index=0):
-        wtd_edges = {}
+        edges = {}
         for edge in self.colored_edges.key():
             edge = eval(edge)
             colored_edge_weight = self.get_colored_edge_weight(edge[0], edge[1])
-            wtd_edges.update({str(edge): colored_edge_weight[index]})
-        return wtd_edges
+            edges.update({str(edge): colored_edge_weight[index]})
+        return edges
 
     ### Motif sampling and mesocale patch compuation
     ### References:
