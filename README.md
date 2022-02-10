@@ -117,7 +117,7 @@ If you use our work in an academic setting, please cite our papers:
 [1] Hanbaek Lyu, Facundo Memoli, and David Sivakoff,
 “Sampling random graph homomorphisms and applications to network data analysis.” https://arxiv.org/abs/1910.09483 (2019)
 
-[2] Hanbaek Lyu, Yacoub Kureh, Joshua Vendrow*, and Mason A. Porter,
+[2] Hanbaek Lyu, Yacoub Kureh, Joshua Vendrow, and Mason A. Porter,
 “Learning low-rank mesoscale structures of networks” https://arxiv.org/abs/2102.06984 (2021)
 
 
