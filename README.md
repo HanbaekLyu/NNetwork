@@ -11,6 +11,19 @@
 
 The efficiency of neighbor access is import for sampling algorithm such as random walks and Markov chain Monte Carlo motif sampling on graphs, which rely on accessing neighborhood information at every iteration of sampling. In comparison, many packages rely on calculations involving powers of adjacency matrices to calculate random walks of length k. 
 
+The default class of `NNetwork` encodes a network with weighted edges, which can also have list-valued edge weights as its 'color'. 
+
+Update for 0.1.0: 
+
+Built-in functions contain sampling algorithms for mesoscale network patches using various MCMC motif sampling algorithms [1]. At stationary distribution, it computes a uniformly chosen k-walk in the graph, which can optionally enforced to be non-backtraking, and the induced adjacency pattern is returned as a k x k matrix. Algorithimically, a given k-walk is randomly updated using a suitable MCMC algorithm. The so-computed k x k `mesoscale patches` are basis of subgraph analysis and network dictionary learning in [2].  
+
+
+### References:
+[1] Hanbaek Lyu, Facundo Memoli, and David Sivakoff,
+“Sampling random graph homomorphisms and applications to network data analysis.” (2019) https://arxiv.org/abs/1910.09483
+[2] Hanbaek Lyu, Yacoub Kureh, Joshua Vendrow*, and Mason A. Porter,
+“Learning low-rank mesoscale structures of networks” https://arxiv.org/abs/2102.06984 (2021)
+
 
 By Josh Vendrow and Hanbaek Lyu
 
