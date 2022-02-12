@@ -5,10 +5,10 @@
 __version__ = "0.1.2"
 
 __author__ = "Hanbaek Lyu"
-__email__ = "hlyu@math.ucla.edu"
+__email__ = "hlyu@math.wisc.edu"
 
 __license__ = "MIT"
 __copyright__ = "Copyright (c) 2020, Hanbaek Lyu"
 
 
-from .example import Example  # noqa: F401
+#from .example import Example  # noqa: F401
