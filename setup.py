@@ -25,7 +25,7 @@ dev_requirements = [
     *docs_requirements,
     *setup_requirements,
 
-    "bump2version>=0.1.2",
+    "bump2version>=0.1.3",
     "ipython>=7.5.0",
 
     "twine>=1.13.0",
