@@ -615,7 +615,7 @@ class NNetwork():
         B = self.path_adj(k)
         for i in range(iterations):
             if sampling_alg == 'glauber':
-                emb = self.glauber_gen_update(B, emb2)
+                emb = self.glauber_update(B, emb2)
             elif sampling_alg == 'pivot':
                 emb = self.Pivot_update(emb, if_inj = False)
             elif sampling_alg == 'idla':
