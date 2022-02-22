@@ -511,9 +511,7 @@ class NNetwork():
             nbh_out = self.indices(B[j, :], lambda x: x == 1)  # indices of nbs of j in B
 
             # build distribution for resampling emb[j] and resample emb[j]
-            time_a = time()
             cmn_nbs = self.nodes(is_set=True)
-            time_1 = time()
             time_neighbor = 0
 
             cmn_nbs = [i for i in self.nodes()]
@@ -615,7 +613,7 @@ class NNetwork():
         B = self.path_adj(k)
         for i in range(iterations):
             if sampling_alg == 'glauber':
-                emb = self.glauber_update(B, emb2)
+                emb = self.glauber_update(B, emb)
             elif sampling_alg == 'pivot':
                 emb = self.Pivot_update(emb, if_inj = False)
             elif sampling_alg == 'idla':
@@ -660,7 +658,8 @@ class NNetwork():
         num_hom_sampled = 0
         X = []
         embs = []
-        while num_hom_sampled < sample_size:
+        count = 0
+        while (num_hom_sampled < sample_size) and (count < 10000 * sample_size):
             emb = self.update_emb(emb,
                                 iterations=1,
                                 sampling_alg=sampling_alg)
@@ -672,7 +671,12 @@ class NNetwork():
                 X.append(Y)
                 embs.append(emb)
                 num_hom_sampled += 1
-
-        X = np.asarray(X)[..., 0].T
+            count += 1
+        if len(X) > 0:
+            X = np.asarray(X)[..., 0].T
+            if skip_folded_hom:
+                print('num of subgraphs induced on k-paths:', X.shape[1])
+        else:
+            print("failed to sample k-paths in 10000 * {n} iterations".format(n=sample_size))
 
         return X, embs
