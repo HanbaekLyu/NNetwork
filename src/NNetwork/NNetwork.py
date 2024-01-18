@@ -2,6 +2,7 @@ import numpy as np
 import csv
 import ast
 import pickle
+from tqdm import trange
 
 """
 Neighborhood-based Network package
@@ -201,7 +202,7 @@ class NNetwork():
 
         return wtd_edgelist
 
-    def save_wtd_edgelist(self, default_folder='Temp_save_graphs', default_name='temp_wtd_edgelist'):
+    def save_wtd_edgelist(self, save_path):
         edgelist = self.get_edges()
         wtd_edgelist = []
         for edge in edgelist:
@@ -209,7 +210,7 @@ class NNetwork():
             wtd_edgelist.append([u, v, self.get_edge_weight(u, v)])
 
         ### Todo: Use pickle later
-        with open(default_folder + '/' + default_name + '.txt', "w") as file:
+        with open(save_path, "w") as file:
             file.write(str(wtd_edgelist))
         return wtd_edgelist
 
@@ -680,3 +681,49 @@ class NNetwork():
             print("failed to sample k-paths in 10000 * {n} iterations".format(n=sample_size))
 
         return X, embs
+
+    def MACC(self,
+            k = 10,
+            emb = None,
+            sample_size=1,
+            skip_folded_hom=False,
+            sampling_alg='pivot'):
+            ### Matrix of Average Clustering Coefficients
+
+            X, emb = self.get_patches(k=k,
+                                sample_size=sample_size,
+                                skip_folded_hom = skip_folded_hom,
+                                sampling_alg=sampling_alg)
+            return np.mean(X, axis=-1).reshape(k,k)
+
+    def chdp_mx(self,
+            k = 10,
+            sample_size=1,
+            skip_folded_hom=False,
+            sampling_alg='pivot',
+            filt_lvl=500):
+            ### Conditional homomorphism density profile
+            ### baseline motif = k-path
+            ### Computes a k x k x 500 matrix of chd profile for each edge (i,j)
+
+        X, emb = self.get_patches(k=k,
+                            sample_size=sample_size,
+                            skip_folded_hom = skip_folded_hom,
+                            sampling_alg=sampling_alg)
+
+        profile_mx = np.zeros(shape=[k,k,filt_lvl])
+
+        for a in trange(k):
+            for b in np.arange(a,k):
+                wt = []
+                for t in np.arange(X.shape[1]):
+                    w = []
+                    for i in np.arange(filt_lvl):
+                        x = np.where(X[:,t].reshape(k,k)[a,b] > i / filt_lvl, 1, 0)
+                        w.append(int(x))
+                    w = np.asarray(w)
+                    wt.append(w)
+                wt = np.asarray(wt)
+                profile = [np.mean(wt[:, i]) for i in np.arange(wt.shape[1])]
+                profile_mx[a, b, :] = profile
+        return profile_mx
